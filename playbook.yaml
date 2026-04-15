@@ -1,0 +1,67 @@
+- name: Setup Docker
+  hosts: sdn_lab
+  become: yes 
+  
+  tasks:
+  - name: Update apt and install system dependencies
+    apt:
+      name:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - software-properties-common
+        - python3
+        - python3-pip
+        - mininet
+        - openvswitch-switch
+      state: present
+      update_cache: yes
+
+  - name: Install Ryu via pip
+    pip:
+      name: ryu
+      executable: pip3
+
+  - name: Add GPG keys
+    apt_key: 
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker repository to apt
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu/dists/ {{ ansible_distribution_release }} stable
+      state: present
+
+  - name: Install Docker engine and plugins
+    apt:
+      name:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+      state: present
+
+  - name: Ensure Docker service is running
+    service:
+      name: docker
+      state: started
+      enable: yes
+
+  - name: Ensure group "docker" exists
+    ansible.builtin.group:
+      name: docker
+      state: present
+
+  - name: Adding ansible_mgr to docker group
+    user:
+      name: ansible_mgr
+      groups: docker
+      append: yes
+
+  - name: change file ownership, group, and permissions
+    ansible.builtin.file:
+      path: /usr/local/bin/docker-compose
+      owner: ansible_mgr
+      group: ansible_mgr
