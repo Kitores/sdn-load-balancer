@@ -10,6 +10,7 @@
   - name: Update apt and install system dependencies
     apt:
       name:
+        - help2man
         - apt-transport-https
         - ca-certificates
         - curl
@@ -56,7 +57,7 @@
     file:
       path: "{{ item }}"
       state: directory
-      mode: '0755'
+      mode: '0777'
     loop:
       - "{{ faucet_conf_dir }}"
       - "{{ prom_conf_dir }}"
@@ -68,8 +69,8 @@
 
   - name: Deply Prometheus config
     template:
-      src: templates/prometheus.yaml.j2
-      dest: "{{ prom_conf_dir }}/prometheus.yaml"
+      src: templates/prometheus.yml.j2
+      dest: "{{ prom_conf_dir }}/prometheus.yml"
 
   - name: Run Faucet Controller
     docker_container:
@@ -88,14 +89,33 @@
       state: started
       restart_policy: always
       network_mode: host
+      user: "0:00"
       volumes:
         - "{{ prom_conf_dir }}:/etc/prometheus"
+        - "prometheus_data:/prometheus"
+      command:
+        - "--config.file=/etc/prometheus/prometheus.yml"
+        - "--storage.tsdb.path=/prometheus"
+
 
   - name: Clone Containernet repo
     git:
       repo: 'https://github.com/containernet/containernet.git'
       dest: /opt/containernet
       version: master
+
+  - name: Allow break-system-packages globally for pip
+    file:
+      path: ~/.config/pip
+      state: directory
+
+  - name: Set pip global break-system-packages
+    copy:
+      dest: ~/.config/pip/pip.conf
+      content: |
+        [global]
+        break-system-packages = true
+
 
   - name: Install Containernet
     command:
