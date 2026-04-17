@@ -1,7 +1,11 @@
-- name: Setup Docker
-  hosts: sdn_lab
-  become: yes 
-  
+- name: Setup SDN Infrastructure (Faucet + Prometheus)
+  hosts: sdn-lab
+  become: yes
+
+  vars:
+    faucet_conf_dir: "/etc/faucet"
+    prom_conf_dir: "/etc/prometheus"
+
   tasks:
   - name: Update apt and install system dependencies
     apt:
@@ -11,26 +15,20 @@
         - curl
         - gnupg
         - software-properties-common
-        - python3
         - python3-pip
-        - mininet
         - openvswitch-switch
+        - git
       state: present
       update_cache: yes
 
-  - name: Install Ryu via pip
-    pip:
-      name: ryu
-      executable: pip3
-
   - name: Add GPG keys
-    apt_key: 
+    apt_key:
       url: https://download.docker.com/linux/ubuntu/gpg
       state: present
 
   - name: Add Docker repository to apt
     apt_repository:
-      repo: deb https://download.docker.com/linux/ubuntu/dists/ {{ ansible_distribution_release }} stable
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
       state: present
 
   - name: Install Docker engine and plugins
@@ -43,12 +41,6 @@
         - docker-compose-plugin
       state: present
 
-  - name: Ensure Docker service is running
-    service:
-      name: docker
-      state: started
-      enable: yes
-
   - name: Ensure group "docker" exists
     ansible.builtin.group:
       name: docker
@@ -60,8 +52,61 @@
       groups: docker
       append: yes
 
-  - name: change file ownership, group, and permissions
-    ansible.builtin.file:
-      path: /usr/local/bin/docker-compose
-      owner: ansible_mgr
-      group: ansible_mgr
+  - name: Create config directories
+    file:
+      path: "{{ item }}"
+      state: directory
+      mode: '0755'
+    loop:
+      - "{{ faucet_conf_dir }}"
+      - "{{ prom_conf_dir }}"
+
+  - name: Deply Faucet config
+      template:
+        src: templates/faucet.yaml.j2
+        dest: "{{ faucet_conf_dir }}/faucet.yaml"
+
+  - name: Deply Prometheus config
+    template:
+      src: templates/prometheus.yaml.j2
+      dest: "{{ prom_conf_dir }}/prometheus.yaml"
+
+  - name: Run Faucet Controller
+    docker_container:
+      name: faucet
+      image: faucet/faucet
+      state: started
+      restart_policy: always
+      network_mode: host
+      volumes:
+        - "{{ faucet_conf_dir }}:/etc/faucet"
+
+  - name: Run Prometheus
+    docker_container:
+      name: prometheus
+      image: prom/prometheus
+      state: started
+      restart_policy: always
+      network_mode: host
+      volumes:
+        - "{{ prom_conf_dir }}:/etc/prometheus"
+
+  - name: Clone Containernet repo
+    git:
+      repo: 'https://github.com/containernet/containernet.git'
+      dest: /opt/containernet
+      version: master
+
+  - name: Install Containernet
+    command:
+      cmd: make install
+      chdir: /opt/containernet
+    register: install_result
+    changed_when: "'Installing' in install_result.stdout"
+
+  - name: Verify installation
+    command: mn --version
+    register: mn_version
+
+  - debug:
+      msg: "Mininet/Containernet version: {{ mn_version.stdout }}"
