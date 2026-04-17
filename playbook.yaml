@@ -62,9 +62,9 @@
       - "{{ prom_conf_dir }}"
 
   - name: Deply Faucet config
-      template:
-        src: templates/faucet.yaml.j2
-        dest: "{{ faucet_conf_dir }}/faucet.yaml"
+    template:
+      src: templates/faucet.yaml.j2
+      dest: "{{ faucet_conf_dir }}/faucet.yaml"
 
   - name: Deply Prometheus config
     template:

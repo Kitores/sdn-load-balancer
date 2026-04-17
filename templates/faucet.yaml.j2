@@ -1,0 +1,19 @@
+dps:
+    sw1:
+        dp_id: 0x1
+        hardware: "Open vSwitch"
+        interfaces:
+            1:
+                native_vlan: backend_net
+                description: "Docker Container 1"
+            2:
+                native_vlan: backend_net
+                description: "Docker Container 2"
+            3:
+                native_vlan: backend_net
+                description: "Client/Traffic Generator"
+
+vlans:
+    backend_net:
+        vid: 100
+        description: "Network for containers"
