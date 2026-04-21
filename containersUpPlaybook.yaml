@@ -1,0 +1,38 @@
+- name: Build and run services
+  hosts: sdn-lab
+  become: yes
+  vars:
+    services:
+      - name: service1
+        src_path: ./Go-services/service1
+        build_path: /tmp/service1-build
+      - name: service2
+        src_path: ./Go-services/service2
+        build_path: /tmp/service2-build
+  tasks:
+  - name: Copy Dockerfiles
+    copy:
+      src: "{{ item.src_path }}/"
+      dest: "{{ item.build_path }}/"
+    loop: "{{ services }}"
+
+  - name: Build images
+    community.docker.docker_image_build:
+      path: "{{ item.build_path }}"
+      dockerfile: Dockerfile
+      name: "{{ item.name }}:latest"
+      pull: no
+      no_cache: false
+      tags:
+        - "{{ item.name }}:latest"
+    loop: "{{ services }}"
+    register: build_results
+
+  - name: Run go-services
+    docker_container:
+      name: "{{ item.item.name }}"
+      image: "{{ item.item.name }}:latest"
+      state: started
+      recreate: yes
+    loop: "{{ build_results.results }}"
+    when: item is success

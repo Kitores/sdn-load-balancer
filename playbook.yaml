@@ -127,6 +127,26 @@
   - name: Verify installation
     command: mn --version
     register: mn_version
-
   - debug:
       msg: "Mininet/Containernet version: {{ mn_version.stdout }}"
+
+  - name: Copy Dockerfile
+    copy:
+      src: ./Go-services/service1/Dockerfile
+      dest: /tmp/docker-build/
+
+  - name: Build images
+    community.docker.docker_image_build:
+      path: /tmp/docker-build
+      dockerfile: Dockerfile
+      name: service1:latest
+      pull: no
+      no_cache: false
+      tags:
+        - service1:latest
+      register: build_result
+
+  - name: Run go-services
+    docker_container:
+      name: service1
+      image:
