@@ -11,5 +11,7 @@ func main() {
 	}
 	http.HandleFunc("/hello", h1)
 
+	log.Println("Starting service listenning :8080")
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -2,9 +2,11 @@ FROM golang:alpine as builder
 
 WORKDIR /app
 COPY . .
-RUN GOOS=linux go build -o main service1.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o main service1.go
 
 FROM alpine
-COPY --from=builder /app/main /app/main
-ENTRYPOINT ["/app/main"]
+RUN apk add --no-cache bash
+WORKDIR /app
+COPY --from=builder /app/main .
+ENTRYPOINT ["./main"]
 EXPOSE 8080

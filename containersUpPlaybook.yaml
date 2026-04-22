@@ -22,17 +22,15 @@
       dockerfile: Dockerfile
       name: "{{ item.name }}:latest"
       pull: no
-      no_cache: false
-      tags:
-        - "{{ item.name }}:latest"
+      nocache: false
     loop: "{{ services }}"
     register: build_results
 
-  - name: Run go-services
-    docker_container:
-      name: "{{ item.item.name }}"
-      image: "{{ item.item.name }}:latest"
-      state: started
-      recreate: yes
-    loop: "{{ build_results.results }}"
-    when: item is success
+#  - name: Run go-services
+ #   docker_container:
+  #    name: "{{ item.item.name }}"
+   #   image: "{{ item.item.name }}:latest"
+    #  state: started
+     # recreate: yes
+    #loop: "{{ build_results.results }}"
+    #when: item is success
