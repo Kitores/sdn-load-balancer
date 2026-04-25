@@ -6,14 +6,32 @@ dps:
             1:
                 native_vlan: backend_net
                 description: "Docker Container 1"
+                acls_in: [my_rules]
             2:
                 native_vlan: backend_net
                 description: "Docker Container 2"
+                acls_in: [my_rules]
             3:
                 native_vlan: backend_net
                 description: "Client/Traffic Generator"
+                acls_in: [my_rules]
 
 vlans:
     backend_net:
         vid: 100
         description: "Network for containers"
+
+
+acls:
+    my_rules:
+        - rule:
+            nw_dst: "10.0.0.100"
+            dl_type: 0x0800
+            actions:
+                set_nw_dw: "10.0.0.1"
+                set_dl_dst: "ce:de:19:a4:88:b5"
+                output:
+                    port: 1
+        - rule:
+            actions:
+                allow: 1
