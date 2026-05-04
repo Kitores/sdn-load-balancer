@@ -62,12 +62,12 @@
       - "{{ faucet_conf_dir }}"
       - "{{ prom_conf_dir }}"
 
-  - name: Deply Faucet config
+  - name: Deploy Faucet config
     template:
       src: templates/faucet.yaml.j2
       dest: "{{ faucet_conf_dir }}/faucet.yaml"
 
-  - name: Deply Prometheus config
+  - name: Deploy Prometheus config
     template:
       src: templates/prometheus.yml.j2
       dest: "{{ prom_conf_dir }}/prometheus.yml"

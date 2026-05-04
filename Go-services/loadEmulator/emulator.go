@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+	"log"
 )
 
 // client to send requests
@@ -20,13 +20,13 @@ func main() {
 			time.Sleep(time.Millisecond * 100)
 
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
-			fmt.Println(string(body))
+			log.Println(string(body))
 		}
 	}
 }

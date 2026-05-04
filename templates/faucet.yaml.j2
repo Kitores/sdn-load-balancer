@@ -28,8 +28,8 @@ acls:
             nw_dst: "10.0.0.100"
             dl_type: 0x0800
             actions:
-                set_nw_dw: "10.0.0.1"
-                set_dl_dst: "ce:de:19:a4:88:b5"
+                set_nw_dst: "10.0.0.1"
+                set_dl_dst: "00:00:00:00:00:01"
                 output:
                     port: 1
         - rule:
