@@ -26,10 +26,10 @@ acls:
     my_rules:
         - rule:
             nw_dst: "10.0.0.100"
-            dl_type: 0x800
+            dl_type: 0x0800
             actions:
                 output:
-                    port: 2
+                    port: {{ . }}
         - rule:
             actions:
                 allow: 1

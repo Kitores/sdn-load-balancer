@@ -69,8 +69,11 @@
 
   - name: Deploy Prometheus config
     template:
-      src: templates/prometheus.yml.j2
-      dest: "{{ prom_conf_dir }}/prometheus.yml"
+      src: "templates/{{ item }}.yml.j2"
+      dest: "{{ prom_conf_dir }}/{{ item }}.yml"
+    loop:
+      - "prometheus"
+      - "alert_rules"
 
   - name: Run Faucet Controller
     docker_container:
