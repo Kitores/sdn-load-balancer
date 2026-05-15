@@ -1,15 +1,54 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"text/template"
 )
+
+type AlertData struct {
+	Annotations  Annotations `json:"annotations"`
+	EndsAt       string      `json:"endsAt"`
+	StartsAt     string      `json:"startsAt"`
+	GeneratorURL string      `json:"generatorURL"`
+	Labels       Labels      `json:"labels"`
+}
+
+type Annotations struct {
+	Summary string `json:"summary"`
+}
+
+type Labels struct {
+	AlertName string `json:"alertname"`
+	ID        string `json:"id"`
+	Instance  string `json:"instance"`
+	Interface string `json:"interface"`
+	Job       string `json:"job"`
+	Severity  string `json:"severity"`
+}
+
+func extractContainerNumber(summary string) int {
+	var n int
+	re := regexp.MustCompile(`Switching traffic to (\S+)`)
+	matches := re.FindStringSubmatch(summary)
+	var name string
+	if len(matches) > 1 {
+		name = string(matches[1])
+	}
+	if name == "d1" {
+		n = 1
+	} else {
+		n = 2
+	}
+	return n
+}
 
 func swithToHostN(number int) error {
 	// Меняем запись в arp таблице на мак адрес сервиса N
@@ -61,24 +100,35 @@ func alertHandler(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Printf("Error read request body %v\n", err)
-
+			return
 		}
 		log.Println(string(body))
-		err = swithToHostN(1)
+		var alert AlertData
+		err = json.Unmarshal(body, &alert)
+		if err != nil {
+			log.Println("Error: ", err)
+			return
+		}
+		var n int
+		n = extractContainerNumber(alert.Annotations.Summary)
+
+		log.Println("n = ", n)
+		err = swithToHostN(n)
 		if err != nil {
 			log.Printf("Error to switch port %v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
-
+	defer r.Body.Close()
 	// чёто с body + вызов switchToHostN
 
 	w.WriteHeader(http.StatusOK)
-
+	return
 }
 
 func main() {
 	// надо придумать как регистрировать момент алёрта(превышения нормы) и реализовтаь логику перенаправления
+	log.Println("Starting listenning on port :9091")
 	http.HandleFunc("/", alertHandler)
-	log.Fatal(http.ListenAndServe(":9091", nil))
+	log.Fatal(http.ListenAndServe("0.0.0.0:9091", nil))
 }

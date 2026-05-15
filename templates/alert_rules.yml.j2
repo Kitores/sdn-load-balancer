@@ -1,10 +1,18 @@
 groups:
   - name: sdn_load_balancing
     rules:
-      - alert: ServiceOverloaded
-        expr: rate(container_network_receive_bytes_total{interface="s1-eth2"}[30s]) > 50000
-        for: 5s
+      - alert: Service2Overloaded
+        expr: rate(container_network_receive_bytes_total{interface="s1-eth2"}[30s]) > 500
+        for: 0s
         labels:
           severity: critical
         annotations:
           summary: "Switching traffic to d1"
+
+      - alert: Service1Overloaded
+        expr: rate(container_network_receive_bytes_total{interface="s1-eth1"}[30s]) > 500
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Switching traffic to d2"
