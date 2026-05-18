@@ -107,6 +107,18 @@
       dest: /opt/containernet
       version: master
 
+  - name: Allow break-system-packages globaly for pip
+    file:
+      path: ~/.config/pip
+      state: directory
+
+  - name: Set pip global break-system-packages
+    copy:
+      dest: ~/.config/pip/pip.conf
+      content: |
+        [global]
+        break-system-packages = true
+
   - name: Install Containernet
     command:
       cmd: make install

@@ -1,0 +1,17 @@
+package main
+
+import (
+	"log"
+	"net/http"
+)
+
+func main() {
+	h1 := func(w http.ResponseWriter, req *http.Request) {
+		w.Write([]byte("Hello from Service 3"))
+	}
+	http.HandleFunc("/hello", h1)
+
+	log.Println("Starting service listenning :8080")
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}

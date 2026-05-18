@@ -9,9 +9,13 @@
       - name: service2
         src_path: ./Go-services/service2
         build_path: /tmp/service2-build
+      - name: service3
+        src_path: ./Go-services/service3
+        build_path: /tmp/service3-build
       - name: client
         src_path: ./Go-services/loadEmulator
         build_path: /tmp/load-emulator-build
+
   tasks:
   - name: Copy Dockerfiles
     copy:

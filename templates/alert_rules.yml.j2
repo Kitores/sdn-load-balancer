@@ -16,3 +16,11 @@ groups:
           severity: critical
         annotations:
           summary: "Switching traffic to d2"
+  
+      - alert: Service3Overloaded
+        expr: rate(container_network_receive_bytes_total{interface="s1-eth3"}[30s]) > 500
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Switching traffic to d1"
