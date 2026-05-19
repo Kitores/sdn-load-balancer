@@ -72,7 +72,7 @@ func rewriteConfig(port int) error {
 	// реализовать логику переписывания файла конфигурации
 	// Текущая идея такова: этот скрипт работает как systemd юнит и по алёрту от prometheus О том что конкретный service захлёбывается, пере
 	// <- перевыбирает свободный сервис переписывает конфиг faucet(надо скопировать faucet.yaml.tmpl) и отправляет докеру сигнал перечитать конфиг
-	tmpl, err := template.ParseFiles("faucet.yaml.tmpl")
+	tmpl, err := template.ParseFiles("/etc/faucet/faucet.yaml.tmpl")
 	if err != nil {
 		return err
 	}

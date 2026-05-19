@@ -1,4 +1,4 @@
-- name: Setup SDN Infrastructure (Faucet + Prometheus)
+- name: Setup SDN Infrastructure (Faucet + Prometheus + cAdvisor + mininet + Balancer)
   hosts: sdn-lab
   become: yes
 
@@ -150,3 +150,43 @@
     register: mn_version
   - debug:
       msg: "Mininet/Containernet version: {{ mn_version.stdout }}"
+
+  - name: Copying balancer
+    ansible.builtin.copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      owner: "{{ item.owner | default('root') }}"
+      group: "{{ item.group | default('root') }}"
+      mode: "{{ item.mode | default('0644') }}"
+    loop:
+      - src: Balancer/sdn-balancer
+        dest: /usr/local/bin/sdn-balancer
+        mode: '0755'
+        owner: root
+        group: root
+
+      - src: Balancer/faucet.yaml.tmpl
+        dst: /etc/faucet/faucet.yaml.tmpl
+        mode: '0644'
+  
+  - name: Create Systemd Unit
+    ansible.builtin.copy:
+      dest: /etc/systemd/system/sdn-balancer.service
+      owner: root
+      group: root
+      mode: '0644'
+      content: |
+        [Unit]
+        Description=SDN Traffic Load Balancer Agent
+        After=network.target
+
+        [Service]
+        Type=simple
+        ExecStart=/usr/local/bin/sdn-balancer
+        Restart=always
+        RestartSec=5
+        User=root
+        WorkingDirectory=/usr/local/bin
+
+        [Install]
+        WantedBy=multi-user.target
