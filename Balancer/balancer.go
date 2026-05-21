@@ -103,17 +103,18 @@ func alertHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println(string(body))
-		var alert AlertData
-		err = json.Unmarshal(body, &alert)
+		var alerts []AlertData
+		err = json.Unmarshal(body, &alerts)
 		if err != nil {
 			log.Println("Error: ", err)
 			return
 		}
 		var n int
-		n = extractContainerNumber(alert.Annotations.Summary)
+		n = extractContainerNumber(alerts[0].Annotations.Summary)
 
 		log.Println("n = ", n)
 		err = swithToHostN(n)
+		w.WriteHeader(http.StatusOK)
 		if err != nil {
 			log.Printf("Error to switch port %v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)

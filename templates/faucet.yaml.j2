@@ -11,7 +11,6 @@ dps:
                 native_vlan: backend_net
                 description: "Docker Container 2"
                 acls_in: [my_rules]
-
             3:
                 native_vlan: backend_net
                 description: "Docker Container 3"
@@ -25,7 +24,6 @@ vlans:
     backend_net:
         vid: 100
         description: "Network for containers"
-
 
 acls:
     my_rules:
