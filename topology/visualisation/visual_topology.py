@@ -5,16 +5,16 @@ from diagrams.onprem.container import Container
 from diagrams.onprem.network import Faucet
 from diagrams.providers.generic.network import Switch
 
-# Стилизация для кластеров, чтобы они выглядели аккуратно и минималистично
+# Стилизация для кластеров
 cluster_attr = {
-    "bgcolor": "#f4f7eb",  # Легкий зеленовато-желтый оттенок, как на схеме
-    "color": "#cbd5e1",    # Тонкая серая рамка
+    "bgcolor": "#f4f7eb",
+    "color": "#cbd5e1",
     "fontsize": "12"
 }
 
 graph_attr = {
     "splines": "spline",
-    "bgcolor": "#e0f2fe",  # Голубой фон для главного кластера Topology
+    "bgcolor": "#e0f2fe",
     "nodesep": "0.6",
     "ranksep": "0.8"
 }
@@ -39,17 +39,13 @@ with Diagram(name="Course Work: Сети ЭВМ", show=False, direction="TB", gr
         with Cluster("Service 1", graph_attr=cluster_attr):
             service1 = Container("Alpine Container\nIP: 10.0.0.1")
             
-        # 5. Кластер SDN-Controller (общий для Faucet и OVS)
+        # 5. Кластер SDN-Controller
         with Cluster("SDN-Controller", graph_attr={"bgcolor": "#f1f5f9", "color": "#cbd5e1"}):
             faucet = Faucet("faucet OpenFlow1.3")
             ovs = Switch("Open vSwitch")
             
-            # Связь внутри контроллера
             faucet >> Edge(color="#64748b") >> ovs
-
-        # Настройка внешних связей и подписей
         
-        # Линк метрик к Prometheus
         prometheus >> Edge(label="http://localhost:9302/metrics", color="#64748b") >> ovs
         
         # Двунаправленные сетевые линки от OVS к хостам

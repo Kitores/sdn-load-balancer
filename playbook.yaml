@@ -1,4 +1,4 @@
-- name: Setup SDN Infrastructure (Faucet + Prometheus + cAdvisor + mininet + Balancer)
+- name: Setup SDN Infrastructure (Faucet + Prometheus + cAdvisor)
   hosts: sdn-lab
   become: yes
 
@@ -166,7 +166,7 @@
         group: root
 
       - src: Balancer/faucet.yaml.tmpl
-        dst: /etc/faucet/faucet.yaml.tmpl
+        dest: /etc/faucet/faucet.yaml.tmpl
         mode: '0644'
   
   - name: Create Systemd Unit
@@ -190,3 +190,10 @@
 
         [Install]
         WantedBy=multi-user.target
+        
+  - name: Reload Systemd, enable and start balancer service
+    ansible.builtin.systemd:
+      name: sdn-balancer
+      state: restarted
+      daemon_reload: true
+      enabled: true
